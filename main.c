@@ -17,9 +17,9 @@ int main() {
     bcm2835_gpio_fsel(PIN_OUT, BCM2835_GPIO_FSEL_OUTP);
     bcm2835_gpio_write(PIN_OUT, HIGH);
 
-    // Set PIN_IN to be an input, with a pull-up resistor and a low detect enable
+    // Set PIN_IN to be an input, with a pull-down resistor and a low detect enable
     bcm2835_gpio_fsel(PIN_IN, BCM2835_GPIO_FSEL_INPT);
-    bcm2835_gpio_set_pud(PIN_IN, BCM2835_GPIO_PUD_UP);
+    bcm2835_gpio_set_pud(PIN_IN, BCM2835_GPIO_PUD_DOWN);
     bcm2835_gpio_len(PIN_IN);
 
     while (1)
