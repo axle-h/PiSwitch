@@ -19,4 +19,6 @@ fi
 # with your own name if you copy and modify this script.
 
 DESC="GPIO interface to switch a Raspberry Pi off."
-DAEMON=@CMAKE_INSTALL_PREFIX@/sbin/PiSwitch
+DAEMON="@CMAKE_INSTALL_PREFIX@/sbin/PiSwitch"
+RUNASUSER="root"
+START_ARGS="--background"

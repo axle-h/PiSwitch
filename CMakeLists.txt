@@ -20,3 +20,4 @@ target_link_libraries(PiSwitch ${BCM2835_LIBRARIES})
 
 install(TARGETS PiSwitch DESTINATION sbin)
 install(FILES "${PROJECT_BINARY_DIR}/service/PiSwitch" DESTINATION /etc/init.d)
+install(CODE "execute_process(\"chmod +x /etc/init.d/PiSwitch && systemctl daemon-reload && service PiSwitch start\")")
