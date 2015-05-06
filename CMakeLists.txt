@@ -6,7 +6,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 configure_file ("service/PiSwitch.in" "${PROJECT_BINARY_DIR}/service/PiSwitch")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99")
 
 find_package(BCM2835 REQUIRED)
 
