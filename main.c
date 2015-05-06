@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <bcm2835.h>
 
 #define PIN_IN RPI_BPLUS_GPIO_J8_38
@@ -34,6 +35,17 @@ int main() {
     }
 
     printf("High input found on gpio %d\n", PIN_IN);
+    printf("Starting daemon...\n");
+
+    pid_t pid = fork();
+
+    if(pid < 0) {
+        printf("Failed to start daemon\n");
+    }
+
+    if(pid > 0) {
+        return 0;
+    }
 
     // Setup a low detect
     bcm2835_gpio_len(PIN_IN);
