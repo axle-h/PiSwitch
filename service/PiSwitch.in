@@ -5,8 +5,8 @@
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: GPIO interface to switch a Raspberry Pi off.
-# Description:       GPIO interface to switch a Raspberry Pi off.
+# Short-Description: Raspberry Pi Power Switch
+# Description:       Daemon to control Raspberry Pi power with an external MCU connected over GPIO
 ### END INIT INFO
 
 # Author: Alex Haslehurst <alex.haslehurst@gmail.com>
