@@ -59,6 +59,7 @@ int main() {
         delay(2000);
     }
 
+    syslog(LOG_INFO, "stopping", PIN_IN);
     closelog();
     bcm2835_close();
     return EXIT_SUCCESS;
