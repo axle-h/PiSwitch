@@ -93,6 +93,7 @@ static void StartDaemon()
     signal(SIGCHLD, SIG_IGN);
     signal(SIGHUP, SIG_IGN);
     signal(SIGTERM, TermSignalHandler);
+    signal(SIGKILL, TermSignalHandler);
 
     /* Fork off for the second time*/
     pid = fork();
