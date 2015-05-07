@@ -21,7 +21,7 @@ int main() {
 
     StartDaemon();
 
-    syslog(LOG_INFO, "PiSwitch starting");
+    syslog(LOG_INFO, "Listening on gpio %d, Writing to gpio %d", PIN_IN, PIN_OUT);
 
     // Set output pin to HIGH.
     // Informs power circuit that pi is on.
@@ -32,6 +32,9 @@ int main() {
     bcm2835_gpio_fsel(PIN_IN, BCM2835_GPIO_FSEL_INPT);
     bcm2835_gpio_set_pud(PIN_IN, BCM2835_GPIO_PUD_DOWN);
 
+    // Wait a while
+    delay(10000);
+
     // Setup a high detect
     // Switch will send a HIGH when it switch is rocked to off
     bcm2835_gpio_hen(PIN_IN);
@@ -41,7 +44,7 @@ int main() {
         if (bcm2835_gpio_eds(PIN_IN))
         {
             bcm2835_gpio_set_eds(PIN_IN);
-            syslog(LOG_INFO, "PiSwitch shutting down");
+            syslog(LOG_INFO, "gpio %d set to HIGH, shutting system down", PIN_IN);
 
             bcm2835_close();
             system("poweroff");
