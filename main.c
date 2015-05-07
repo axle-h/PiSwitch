@@ -9,8 +9,8 @@
 #define PIN_IN RPI_BPLUS_GPIO_J8_38
 #define PIN_OUT RPI_BPLUS_GPIO_J8_40
 
-static void TermSignalHandler(int signal);
-static void StartDaemon();
+void TermSignalHandler(int signal);
+void StartDaemon();
 
 int running;
 
@@ -64,12 +64,12 @@ int main() {
     return EXIT_SUCCESS;
 }
 
-static void TermSignalHandler(int signal)
+void TermSignalHandler(int signal)
 {
     running = 0;
 }
 
-static void StartDaemon()
+void StartDaemon()
 {
     pid_t pid;
 
@@ -96,6 +96,7 @@ static void StartDaemon()
     signal(SIGHUP, SIG_IGN);
     signal(SIGTERM, TermSignalHandler);
     signal(SIGKILL, TermSignalHandler);
+    signal(SIGINT, TermSignalHandler);
 
     /* Fork off for the second time*/
     pid = fork();
