@@ -49,6 +49,7 @@ int main() {
             bcm2835_gpio_set_eds(PIN_IN);
             syslog(LOG_INFO, "gpio %d set to HIGH, shutting system down", PIN_IN);
 
+            closelog();
             bcm2835_close();
             system("poweroff");
 
@@ -58,6 +59,7 @@ int main() {
         delay(2000);
     }
 
+    closelog();
     bcm2835_close();
     return EXIT_SUCCESS;
 }
