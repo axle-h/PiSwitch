@@ -36,7 +36,7 @@ int main() {
     bcm2835_gpio_set_pud(PIN_IN, BCM2835_GPIO_PUD_DOWN);
 
     // Wait a while
-    delay(20000);
+    delay(2000);
 
     // Setup a high detect
     // Switch will send a HIGH when it switch is rocked to off
