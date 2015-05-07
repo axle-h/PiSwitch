@@ -8,26 +8,56 @@
 #include <sys/syslog.h>
 #include <string.h>
 
+#define DEBUG 0
 #define PIN_IN RPI_BPLUS_GPIO_J8_38
 #define PIN_OUT RPI_BPLUS_GPIO_J8_40
 #define PID_FILE "/var/run/PiSwitch.pid"
 
-void TermSignalHandler(int signal);
 void StartDaemon();
+void SetupSignals();
+void SetupGpio();
+int WaitForSignalOrSwitch();
+
+void DoFork();
+void TermSignalHandler(int signal);
 
 int running;
 
 int main() {
-    //bcm2835_set_debug(1);
-
-    if (!bcm2835_init()) {
-        return EXIT_FAILURE;
-    }
+    bcm2835_set_debug(DEBUG);
 
     StartDaemon();
-
     running = 1;
+
+    SetupSignals();
+
+    SetupGpio();
+
+    // Open the log file
+    openlog("PiSwitch", LOG_PID, LOG_DAEMON);
     syslog(LOG_INFO, "Listening on gpio %d, Writing to gpio %d", PIN_IN, PIN_OUT);
+
+    int powerOff = WaitForSignalOrSwitch();
+    if(powerOff) {
+        syslog(LOG_INFO, "gpio %d set to HIGH, shutting system down", PIN_IN);
+    } else {
+        syslog(LOG_INFO, "signal reveived, stopping");
+    }
+
+    closelog();
+    bcm2835_close();
+
+    if(powerOff) {
+        system("poweroff");
+    }
+
+    return EXIT_SUCCESS;
+}
+
+void SetupGpio() {
+    if (!bcm2835_init()) {
+        exit(EXIT_FAILURE);
+    }
 
     // Set output pin to HIGH.
     // Informs power circuit that pi is on.
@@ -44,51 +74,26 @@ int main() {
     // Setup a high detect
     // Switch will send a HIGH when it switch is rocked to off
     bcm2835_gpio_hen(PIN_IN);
+}
 
+int WaitForSignalOrSwitch() {
     while (running)
     {
         if (bcm2835_gpio_eds(PIN_IN))
         {
             bcm2835_gpio_set_eds(PIN_IN);
-            syslog(LOG_INFO, "gpio %d set to HIGH, shutting system down", PIN_IN);
-
-            closelog();
-            bcm2835_close();
-            system("poweroff");
-
-            return EXIT_SUCCESS;
+            return 1;
         }
 
         delay(2000);
     }
 
-    syslog(LOG_INFO, "stopping");
-    closelog();
-    bcm2835_close();
-    return EXIT_SUCCESS;
-}
-
-void TermSignalHandler(int signal)
-{
-    running = 0;
+    return 0;
 }
 
 void StartDaemon()
 {
-    pid_t pid;
-
-    // Fork off the parent process
-    pid = fork();
-
-    // An error occurred
-    if (pid < 0) {
-        exit(EXIT_FAILURE);
-    }
-
-    // Success: Let the parent terminate
-    if (pid > 0) {
-        exit(EXIT_SUCCESS);
-    }
+    DoFork();
 
     // On success: The child process becomes session leader
     if (setsid() < 0) {
@@ -96,17 +101,7 @@ void StartDaemon()
     }
 
     // Fork off for the second time
-    pid = fork();
-
-    // An error occurred
-    if (pid < 0) {
-        exit(EXIT_FAILURE);
-    }
-
-    // Success: Let the parent terminate
-    if (pid > 0) {
-        exit(EXIT_SUCCESS);
-    }
+    DoFork();
 
     // Set new file permissions
     umask(0);
@@ -114,20 +109,19 @@ void StartDaemon()
     // Change the working directory to the root directory
     chdir("/");
 
-    /* Close all open file descriptors */
+    // Close all open file descriptors
     for (int x = getdtablesize(); x>0; x--)
     {
         close (x);
     }
+}
 
-    // Open the log file
-    openlog ("PiSwitch", LOG_PID, LOG_DAEMON);
-
+void SetupSignals() {
     // Catch, ignore and handle signals
     signal(SIGCHLD, SIG_IGN);
-    signal(SIGTSTP,SIG_IGN);
-    signal(SIGTTOU,SIG_IGN);
-    signal(SIGTTIN,SIG_IGN);
+    signal(SIGTSTP, SIG_IGN);
+    signal(SIGTTOU, SIG_IGN);
+    signal(SIGTTIN, SIG_IGN);
     signal(SIGHUP, SIG_IGN);
     signal(SIGTERM, TermSignalHandler);
     signal(SIGINT, TermSignalHandler);
@@ -146,4 +140,26 @@ void StartDaemon()
     char str[10];
     sprintf(str, "%d\n", getpid());
     write(lfp, str, strlen(str));
+}
+
+void TermSignalHandler(int signal)
+{
+    running = 0;
+}
+
+void DoFork() {
+    pid_t pid;
+
+    // Fork off the parent process
+    pid = fork();
+
+    // An error occurred
+    if (pid < 0) {
+        exit(EXIT_FAILURE);
+    }
+
+    // Success: Let the parent terminate
+    if (pid > 0) {
+        exit(EXIT_SUCCESS);
+    }
 }
