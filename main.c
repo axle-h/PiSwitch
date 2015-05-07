@@ -12,6 +12,8 @@
 static void TermSignalHandler(int signal);
 static void StartDaemon();
 
+int running;
+
 int main() {
     //bcm2835_set_debug(1);
 
@@ -21,6 +23,7 @@ int main() {
 
     StartDaemon();
 
+    running = 1;
     syslog(LOG_INFO, "Listening on gpio %d, Writing to gpio %d", PIN_IN, PIN_OUT);
 
     // Set output pin to HIGH.
@@ -39,7 +42,7 @@ int main() {
     // Switch will send a HIGH when it switch is rocked to off
     bcm2835_gpio_hen(PIN_IN);
 
-    while (1)
+    while (running)
     {
         if (bcm2835_gpio_eds(PIN_IN))
         {
@@ -54,12 +57,14 @@ int main() {
 
         delay(2000);
     }
+
+    bcm2835_close();
+    return EXIT_SUCCESS;
 }
 
 static void TermSignalHandler(int signal)
 {
-    bcm2835_close();
-    exit(EXIT_SUCCESS);
+    running = 0;
 }
 
 static void StartDaemon()
