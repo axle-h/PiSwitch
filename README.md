@@ -1,5 +1,5 @@
 # PiSwitch
-GPIO interface to switch a Raspberry Pi off.
+Daemon to control Raspberry Pi power with an external MCU connected over GPIO.
 
 ### Dependencies
     sudo apt-get install build-essential git cmake
