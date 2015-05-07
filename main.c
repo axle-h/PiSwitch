@@ -2,26 +2,26 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <bcm2835.h>
+#include <signal.h>
+#include <sys/stat.h>
+#include <sys/syslog.h>
 
 #define PIN_IN RPI_BPLUS_GPIO_J8_38
 #define PIN_OUT RPI_BPLUS_GPIO_J8_40
+
+static void TermSignalHandler(int signal);
+static void StartDaemon();
 
 int main() {
     //bcm2835_set_debug(1);
 
     if (!bcm2835_init()) {
-        return 1;
+        return EXIT_FAILURE;
     }
 
-    pid_t pid = fork();
+    StartDaemon();
 
-    if(pid < 0) {
-        printf("Failed to start daemon\n");
-    }
-
-    if(pid > 0) {
-        return 0;
-    }
+    syslog(LOG_INFO, "PiSwitch starting");
 
     // Set output pin to HIGH.
     // Informs power circuit that pi is on.
@@ -41,14 +41,76 @@ int main() {
         if (bcm2835_gpio_eds(PIN_IN))
         {
             bcm2835_gpio_set_eds(PIN_IN);
-            printf("PiSwitch shutting down\n");
+            syslog(LOG_INFO, "PiSwitch shutting down");
 
             bcm2835_close();
             system("poweroff");
 
-            return 0;
+            return EXIT_SUCCESS;
         }
 
         delay(2000);
     }
+}
+
+static void TermSignalHandler(int signal)
+{
+    bcm2835_close();
+    exit(EXIT_SUCCESS);
+}
+
+static void StartDaemon()
+{
+    pid_t pid;
+
+    /* Fork off the parent process */
+    pid = fork();
+
+    /* An error occurred */
+    if (pid < 0) {
+        exit(EXIT_FAILURE);
+    }
+
+    /* Success: Let the parent terminate */
+    if (pid > 0) {
+        exit(EXIT_SUCCESS);
+    }
+
+    /* On success: The child process becomes session leader */
+    if (setsid() < 0) {
+        exit(EXIT_FAILURE);
+    }
+
+    /* Catch, ignore and handle signals */
+    signal(SIGCHLD, SIG_IGN);
+    signal(SIGHUP, SIG_IGN);
+    signal(SIGTERM, TermSignalHandler);
+
+    /* Fork off for the second time*/
+    pid = fork();
+
+    /* An error occurred */
+    if (pid < 0) {
+        exit(EXIT_FAILURE);
+    }
+
+    /* Success: Let the parent terminate */
+    if (pid > 0) {
+        exit(EXIT_SUCCESS);
+    }
+
+    /* Set new file permissions */
+    umask(0);
+
+    /* Change the working directory to the root directory */
+    chdir("/");
+
+    /* Close all open file descriptors */
+    for (int x = getdtablesize(); x>0; x--)
+    {
+        close (x);
+    }
+
+    /* Open the log file */
+    openlog ("PiSwitch", LOG_PID, LOG_DAEMON);
 }
