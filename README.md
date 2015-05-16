@@ -2,7 +2,7 @@
 Daemon to control Raspberry Pi power with an external MCU connected over GPIO.
 
 ### Dependencies
-    sudo apt-get install build-essential git cmake
+    sudo apt-get install build-essential git cmake libconfuse-dev
 
 ### Install bcm2835 library
     wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.44.tar.gz
