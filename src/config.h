@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 typedef struct {
+    bool RunAsDaemon;
     bool DebugEnabled;
     const char *PidFile;
     uint8_t GpioIn;
@@ -11,5 +12,9 @@ typedef struct {
     uint32_t PollFrequency;
 } PiSwitchConfig;
 
+typedef struct {
 
-bool TryGetPiSwitchConfig(const char *name, PiSwitchConfig *piSwitchConfig);
+} PiSwitchArgs;
+
+
+bool TryGetPiSwitchConfig(const char *name, int argc, char **argv, PiSwitchConfig *piSwitchConfig);

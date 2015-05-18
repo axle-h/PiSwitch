@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <bcm2835.h>
 #include <sys/syslog.h>
+#include <signal.h>
+#include <stdio.h>
 #include "config.h"
 #include "daemon.h"
 
@@ -8,19 +10,20 @@
 #define CONFIG_FILE "/etc/gpio/piswitch.cfg"
 
 void SetupGpio(uint8_t gpioIn, uint8_t gpioOut);
+void SetupSignals();
 void SignalHander(int signal);
 
 bool running;
 
-int main() {
-    // Open the log file
-    openlog(LOG_IDENTITY, LOG_PID, LOG_DAEMON);
-
+int main(int argc, char **argv) {
     PiSwitchConfig config;
-    if(!TryGetPiSwitchConfig(CONFIG_FILE, &config)) {
-        syslog(LOG_ERR, "Failed to read config file %s", CONFIG_FILE);
+    if(!TryGetPiSwitchConfig(CONFIG_FILE, argc, argv, &config)) {
+        fprintf(stderr, "Configuration error\n");
         return -1;
     }
+
+    // Open the log file
+    openlog(LOG_IDENTITY, LOG_PID, config.RunAsDaemon ? LOG_DAEMON : LOG_USER);
 
     syslog(LOG_INFO, "Debug mode: %s, Listening on gpio: %u, Writing to gpio: %u, Poll frequency: %u",
            config.DebugEnabled ? "true" : "false", config.GpioIn, config.GpioOut, config.PollFrequency);
@@ -29,9 +32,11 @@ int main() {
 
     running = true;
 
-    if(!config.DebugEnabled) {
-        StartDaemon(config.PidFile, SignalHander);
+    if(config.RunAsDaemon) {
+        StartDaemon(config.PidFile);
     }
+
+    SetupSignals();
 
     SetupGpio(config.GpioIn, config.GpioOut);
 
@@ -62,6 +67,17 @@ int main() {
     }
 
     return EXIT_SUCCESS;
+}
+
+void SetupSignals() {
+    // Catch, ignore and handle signals
+    signal(SIGCHLD, SIG_IGN);
+    signal(SIGTSTP, SIG_IGN);
+    signal(SIGTTOU, SIG_IGN);
+    signal(SIGTTIN, SIG_IGN);
+    signal(SIGHUP, SIG_IGN);
+    signal(SIGTERM, SignalHander);
+    signal(SIGINT, SignalHander);
 }
 
 void SignalHander(int signal) {
