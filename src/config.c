@@ -29,8 +29,8 @@ typedef struct {
 static error_t ParseOption(int key, char *arg, struct argp_state *state);
 static struct argp_option options[] = {
         { "daemon", OPT_DAEMON, 0, 0, "Run as a daemon" },
-        { "debug", OPT_DEBUG, 0, 0, "Run with debug options set for bcm library" },
-        { "pidfile", OPT_PIDFILE, "FILE", 0, "Use FILE instead of standard pid file" },
+        { "debug", OPT_DEBUG, 0, 0, "Run with debug options set in gpio library" },
+        { "pidfile", OPT_PIDFILE, "FILE", 0, "Write PID to FILE" },
         { 0 }
 };
 
@@ -60,10 +60,10 @@ bool TryGetPiSwitchConfig(const char *name, int argc, char **argv, PiSwitchConfi
     }
 
     piSwitchConfig->RunAsDaemon = !arguments.DebugEnabled && arguments.RunAsDaemon;
+    piSwitchConfig->DebugEnabled = arguments.DebugEnabled;
     piSwitchConfig->PidFile = arguments.PidFile;
     piSwitchConfig->GpioIn = config.GpioIn;
     piSwitchConfig->GpioOut = config.GpioOut;
-    piSwitchConfig->DebugEnabled = arguments.DebugEnabled;
     piSwitchConfig->PollFrequency = config.PollFrequency;
 
     cfg_free(cfg);
