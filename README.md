@@ -16,7 +16,8 @@ Daemon to control Raspberry Pi power with an external MCU connected over GPIO.
 ### Install PiSwitch:
     git clone https://github.com/axle-h/PiSwitch.git
     cd PiSwitch
-    cmake .
+    mkdir build && cd build
+    cmake -D CMAKE_BUILD_TYPE=Release ../
     make
     sudo make install
 
