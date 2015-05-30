@@ -11,7 +11,7 @@
 
 void SetupGpio(uint8_t gpioIn, uint8_t gpioOut);
 void SetupSignals();
-void SignalHander(int signal);
+void SignalHandler(int signal);
 
 bool running;
 
@@ -45,7 +45,6 @@ int main(int argc, char **argv) {
     {
         if (bcm2835_gpio_eds(config.GpioIn))
         {
-            bcm2835_gpio_set_eds(config.GpioIn);
             powerOff = true;
             break;
         }
@@ -75,12 +74,12 @@ void SetupSignals() {
     signal(SIGTSTP, SIG_IGN);
     signal(SIGTTOU, SIG_IGN);
     signal(SIGTTIN, SIG_IGN);
-    signal(SIGHUP, SIG_IGN);
-    signal(SIGTERM, SignalHander);
-    signal(SIGINT, SignalHander);
+    signal(SIGHUP, SignalHandler);
+    signal(SIGTERM, SignalHandler);
+    signal(SIGINT, SignalHandler);
 }
 
-void SignalHander(int signal) {
+void SignalHandler(int signal) {
     running = false;
 }
 
