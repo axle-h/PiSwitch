@@ -25,8 +25,8 @@ int main(int argc, char **argv) {
     // Open the log file
     openlog(LOG_IDENTITY, LOG_PID, config.RunAsDaemon ? LOG_DAEMON : LOG_USER);
 
-    syslog(LOG_INFO, "Debug mode: %s, Listening on gpio: %u, Writing to gpio: %u, Poll frequency: %u",
-           config.DebugEnabled ? "true" : "false", config.GpioIn, config.GpioOut, config.PollFrequency);
+    syslog(LOG_INFO, "Listening on gpio: %u, Writing to gpio: %u, Poll frequency: %u",
+           config.GpioIn, config.GpioOut, config.PollFrequency);
 
     bcm2835_set_debug((uint8_t) config.DebugEnabled);
 
@@ -43,10 +43,14 @@ int main(int argc, char **argv) {
     bool powerOff = false;
     while (running)
     {
-        if (bcm2835_gpio_eds(config.GpioIn))
-        {
-            powerOff = true;
-            break;
+        if(bcm2835_gpio_lev(config.GpioIn) == HIGH) {
+
+            // Check it again!
+            bcm2835_delay(500);
+            if(bcm2835_gpio_lev(config.GpioIn) == HIGH) {
+                powerOff = true;
+                break;
+            }
         }
 
         bcm2835_delay(config.PollFrequency);
@@ -99,8 +103,4 @@ void SetupGpio(uint8_t gpioIn, uint8_t gpioOut) {
 
     // Wait a while
     bcm2835_delay(100);
-
-    // Setup a high detect
-    // Switch will send a HIGH when it switch is rocked to off
-    bcm2835_gpio_hen(gpioIn);
 }
