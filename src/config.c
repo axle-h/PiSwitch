@@ -62,6 +62,7 @@ bool TryGetPiSwitchConfig(const char *name, int argc, char **argv, PiSwitchConfi
     piSwitchConfig->RunAsDaemon = !arguments.DebugEnabled && arguments.RunAsDaemon;
     piSwitchConfig->DebugEnabled = arguments.DebugEnabled;
     piSwitchConfig->PidFile = arguments.PidFile;
+    piSwitchConfig->PidFilePointer = -1;
     piSwitchConfig->GpioIn = config.GpioIn;
     piSwitchConfig->GpioOut = config.GpioOut;
     piSwitchConfig->PollFrequency = config.PollFrequency;

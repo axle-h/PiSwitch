@@ -7,6 +7,7 @@ typedef struct {
     bool RunAsDaemon;
     bool DebugEnabled;
     const char *PidFile;
+    int PidFilePointer;
     uint8_t GpioIn;
     uint8_t GpioOut;
     uint32_t PollFrequency;

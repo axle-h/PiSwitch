@@ -32,9 +32,7 @@ int main(int argc, char **argv) {
 
     running = true;
 
-    if(config.RunAsDaemon) {
-        StartDaemon(config.PidFile);
-    }
+    TryStartDaemon(&config);
 
     SetupSignals();
 
@@ -69,6 +67,7 @@ int main(int argc, char **argv) {
         system("poweroff");
     }
 
+    TryStopDaemon(&config);
     return EXIT_SUCCESS;
 }
 
