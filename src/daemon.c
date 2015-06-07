@@ -5,7 +5,6 @@
 #include <stdlib.h>
 
 #include "daemon.h"
-#include "config.h"
 
 void TryStartDaemon(PiSwitchConfig *config) {
     if(!config->RunAsDaemon || config->PidFile == NULL) {
